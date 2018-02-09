@@ -4,7 +4,7 @@ In this challenge, you will propose a way to access a service running on a remot
 
 Consider the architecture proposed on the figure below:
  
-![alt text](example network infrastructure.png "Example network infrastructure")
+![alt text](https://github.com/intelie/challenge-remote-access/raw/master/example%20network%20infrastructure.png "Example network infrastructure")
 
 The only allowed connection between Client A and Server A is via SSH.
 The only allowed connection between Server A and Server B is via SSH.
