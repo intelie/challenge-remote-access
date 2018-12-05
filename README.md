@@ -14,7 +14,7 @@ We need to access, from Client A and using HTTP, a service running on port 8000 
 Note:
 > There is a service running on port 8000 of Server A.
 
-Both client and servers run CentOS 7.
+Both client and servers run CentOS 7 without X.
 
 We expect you to:
 * Provide the set of commands that allow the service to be accessed
