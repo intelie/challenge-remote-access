@@ -1,15 +1,20 @@
 package net.intelie.challenges.sensordataavg;
 
 import com.mongodb.MongoClient;
+import com.mongodb.client.AggregateIterable;
 import org.bson.Document;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Consumer;
 
+import static net.intelie.challenges.sensordataavg.utils.MapUtils.newMap;
+
+/*
+ Note: this implementation is intended for use in labs and exercises. It is not optimized for a high throughput
+ */
 @Service
 public class MeasurementService {
 
@@ -33,7 +38,9 @@ public class MeasurementService {
 
         Date timestamp;
         try {
-            timestamp = new SimpleDateFormat(TIMESTAMP_FORMAT).parse(rawTimestamp);
+            SimpleDateFormat dateFormat = new SimpleDateFormat(TIMESTAMP_FORMAT);
+            dateFormat.setLenient(false);
+            timestamp = dateFormat.parse(rawTimestamp);
         } catch (ParseException e) {
             throw new ValidationException("Invalid timestamp: " + rawTimestamp + ". Use format " + TIMESTAMP_FORMAT);
         }
@@ -47,7 +54,32 @@ public class MeasurementService {
     }
 
     public List<ReportItem> getMinuteAvgReport() {
-        return null;
+        AggregateIterable<Document> documents = this.mongoClient.getDatabase(DB_NAME).getCollection(COL_NAME).aggregate(Arrays.asList(
+                new Document()
+                        .append("$group",
+                                newMap(
+                                        "_id",
+                                        newMap("sensor", "$sensor",
+                                                "minute", newMap("$dateToString",
+                                                        newMap("date", "$timestamp", "format", "%Y-%m-%dT%H:%M"))
+                                        ),
+                                        "minuteAvg", newMap("$avg", "$value"),
+                                        "numMeasurements", newMap("$sum", 1)
+                                )
+                        ),
+                new Document()
+                        .append("$sort", newMap("_id.minute", 1, "_id.sensor", 1))
+        ));
+
+        List<ReportItem> result = new ArrayList<>();
+        documents.forEach((Consumer<Document>) doc -> result.add(new ReportItem(
+                (String) ((Document) doc.get("_id")).get("sensor"),
+                (String) ((Document) doc.get("_id")).get("minute"),
+                (Double) doc.get("minuteAvg"),
+                (Integer) doc.get("numMeasurements"))
+        ));
+
+        return result;
     }
 
     private void basicValidation(Map<String, Object> measurement) throws ValidationException {
@@ -72,6 +104,16 @@ public class MeasurementService {
     }
 
     public static class ReportItem {
+        public final String sensor;
+        public final String minute;
+        public final Double minuteAvg;
+        public final Integer numMeasurements;
 
+        ReportItem(String sensor, String minute, Double minuteAvg, Integer numMeasurements) {
+            this.sensor = sensor;
+            this.minute = minute;
+            this.minuteAvg = minuteAvg;
+            this.numMeasurements = numMeasurements;
+        }
     }
 }

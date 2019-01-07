@@ -27,9 +27,9 @@ public class Controller {
         return "SENSOR-DATA-AVG: Calculate minute averages of measures\n"
                 + "How to use this service:\n"
                 + "  To send a new measurement, POST a JSON to /measures with the attributes:\n"
-                + "          sensor (String), timestamp (YYYY-MM-DD_HH:mm:SS), value (number)"
-                + "          (Content-Type must be application/json)"
-                + "  To generate an average report, request /minute-report using GET";
+                + "          sensor (String), timestamp (YYYY-MM-DD_HH:mm:SS), value (number)\n"
+                + "          (Content-Type must be application/json)\n"
+                + "  To generate an average report, request /minute-report using GET\n";
     }
 
     @PostMapping(path = "/measures", consumes = "application/json", produces = "text/plain")
