@@ -1,0 +1,35 @@
+# Intelie Challenge
+
+ - server-b is the hostname that translates to the *INTERNAL IP ADDRESS ON REMOTE NETWORK* of Server B and this IP is considered known to both client and Server A, even though Client has no known routes or means to reach it directly;
+ - server-a is the hostname that translates to the *PUBLIC* ip of Server A;
+ 
+ - 62000 is a known high port that is not in use in Client station;
+ 
+ - clientLogin is a username used by Client to establish SSH connection to Server A.
+
+## Main Solution   
+In order to access the service that resides in Server B from Client, going through Server A, one could use the following command executed in Client station:
+ 
+$ ssh -L 62000:server-b:8000 clientLogin@server-a
+
+What this command performs is known as local port forwarding (parameter -L of OpenSSH client utility) and allows connections from port 62000 of Client to be forwarded to port 8000 on Server B in a transparent way and quick way through Server A's SSH connection. 
+
+With this connection setup, Client can open a HTTP connection using a browser, for example, and access the HTTP service on Server B typping the following on the address field of the browser:
+
+http://localhost:62000
+
+After the execution of the command, if successful, the return is the the usual banner displayed when logging in Server A then the prompt of the clientLogin in Server A's terminal.
+
+
+## Alternative solution
+A possible problem with this solution is that anyone with access to Client can access the same service in Server B, using the forwarded port (62000) in Client. In other words, anyone that can reach Client's IP can insert it along with to port (62000) in a browser then access Server B's service.
+
+In order to prevent others but Client to access the target service in Server B, one can execute the following command, instead:
+
+$ ssh -L localhost:62000:server-b:8000 clientLogin@server-a
+
+Specifying the localhost in the command along with the local port will prevent the aforementioned situation.
+
+
+
+
